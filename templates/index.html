@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой первый сайт</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        
+        <p>Нажмите на кнопки чтобы проверить работу:</p>
+        
+        <div class="buttons-container">
+            <button id="uploadBtn" class="btn">📹 Загрузить видео</button>
+            <button id="infoBtn" class="btn">📊 Вывод информации</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="info">
+            <p><strong>Сервер:</strong> Python Flask</p>
+            <p><strong>Статус:</strong> <span style="color: green;">● Работает</span></p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
