@@ -59,7 +59,6 @@ def save_video(file):
 @app.route('/upload', methods=['POST'])
 def upload_video():
     # Получаем данные из запроса
-    print("Blorp")
     data = request.get_json()
     print("Кто-то нажал кнопку Загрузить видео!")
     
