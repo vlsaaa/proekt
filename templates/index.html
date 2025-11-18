@@ -7,8 +7,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
+    <!-- Кнопка авторизации -->
+    <button id="authBtn" class="auth-btn">🔐 Авторизоваться</button>
+    
     <div class="container">
-        
+        <h1>Добро пожаловать на мой сайт!</h1>
         <p>Нажмите на кнопки чтобы проверить работу:</p>
         
         <div class="buttons-container">
@@ -21,6 +24,28 @@
         <div class="info">
             <p><strong>Сервер:</strong> Python Flask</p>
             <p><strong>Статус:</strong> <span style="color: green;">● Работает</span></p>
+        </div>
+    </div>
+
+    <!-- Модальное окно авторизации -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeModal" class="modal-close">×</button>
+            <h2 class="modal-title">Авторизация</h2>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" placeholder="Введите ваш e-mail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Номер телефона:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Введите ваш номер телефона" required>
+                </div>
+                
+                <button type="submit" id="submitAuth" class="submit-btn" disabled>Авторизоваться</button>
+            </form>
         </div>
     </div>
 
