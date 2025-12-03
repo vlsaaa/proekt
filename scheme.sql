@@ -2,19 +2,20 @@ DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS videos;
 
 CREATE TABLE user (
-    id INTEGER PRIMARY KEY AUTOINCREMENT
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(20),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE videos (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255),
-    filename VARCHAR(255),
-    file_path VARCHAR(500),  -- Path to actual file
-    file_size BIGINT,
-    mime_type VARCHAR(50),
-    upload_date DATETIME,
-    user_id INT,
-    duration INT,  -- in seconds
-    thumbnail_path VARCHAR(500),
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    filename VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size BIGINT NOT NULL,
+    upload_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
