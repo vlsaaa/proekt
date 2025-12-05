@@ -29,11 +29,11 @@ class MLService:
         
         if queue > THRESHOLD:
             alert_level = "HIGH"
-            alert_message = f"🚨 ТРЕВОГА! Очередь {queue} человек (порог: {THRESHOLD})"
+            alert_message = f"ТРЕВОГА! Очередь {queue} человек (порог: {THRESHOLD})"
             action = "open_extra_cashier"
         else:
             alert_level = "LOW"
-            alert_message = f"✅ Норма. Очередь {queue} человек"
+            alert_message = f"Норма. Очередь {queue} человек"
             action = "none"
         
         return {
