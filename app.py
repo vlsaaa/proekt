@@ -6,6 +6,8 @@ import db
 import sys
 import io
 import uuid
+from db import get_db
+
 from werkzeug.utils import secure_filename
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -239,6 +241,70 @@ def auth_status():
             'authenticated': False,
             'message': 'Пользователь не авторизован'
         })
+
+@app.route('/api/videos/processed')
+def get_processed_videos():
+    """Получить список обработанных видео"""
+    try:
+        db = get_db()
+        
+        # Ищем обработанные видео
+        videos = db.execute("""
+            SELECT id, title, filename, 
+                   people_entered, people_exited, queue_length,
+                   alert_message, processed_at
+            FROM videos 
+            WHERE status = 'processed'
+            ORDER BY processed_at DESC
+            LIMIT 50
+        """).fetchall()
+        
+        result = []
+        for video in videos:
+            result.append({
+                'id': video['id'],
+                'title': video['title'],
+                'filename': video['filename'],
+                'stats': {
+                    'entered': video['people_entered'],
+                    'exited': video['people_exited'],
+                    'inside': video['people_entered'] - video['people_exited'],
+                    'queue': video['queue_length']
+                },
+                'alert': video['alert_message'],
+                'processed_at': video['processed_at']
+            })
+        
+        return jsonify({
+            'success': True,
+            'videos': result,
+            'count': len(result),
+            'message': 'Список обработанных видео'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/processing/status')
+def get_processing_status():
+    """Получить статус обработки видео"""
+    return jsonify({
+        'success': True,
+        'ml_integration': True,
+        'endpoints': {
+            'processed_videos': '/api/videos/processed',
+            'processing_status': '/api/processing/status'
+        },
+        'instructions': {
+            'start_worker': 'python run_worker.py',
+            'check_results': 'GET /api/videos/processed'
+        },
+        'note': 'ML воркер работает в отдельном терминале'
+    })
 
 # Запускаем сервер
 if __name__ == '__main__':
