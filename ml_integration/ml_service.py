@@ -9,7 +9,7 @@ class MLService:
     def process_video(self, video_path):
         """
         Имитация работы ML модели.
-        Позже заменится на вызов реальной ML от Ани.
+        Позже заменится на вызов реальной ML от Сони.
         """
         print(f"[ML Service] Обрабатываю видео: {video_path}")
         
