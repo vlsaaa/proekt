@@ -3,7 +3,6 @@ import sqlite3
 import json
 from datetime import datetime
 
-# Импортируем наш ML сервис
 from .ml_service import MLService
 
 class VideoWorker:
@@ -13,7 +12,7 @@ class VideoWorker:
         self.db_path = db_path
         self.ml_service = MLService()
         self.running = True
-        print("🤖 Видео-воркер инициализирован")
+        print("Видео-воркер инициализирован")
     
     def get_db_connection(self):
         """Подключение к базе данных"""
@@ -52,8 +51,6 @@ class VideoWorker:
             """, (video_id,))
         
         elif status == "processed" and ml_results:
-            # ВАЖНО: ml_results должен быть словарём от MLService
-            # Используем .get() только если это словарь
             entered = ml_results['entered_count'] if isinstance(ml_results, dict) else 0
             exited = ml_results['exited_count'] if isinstance(ml_results, dict) else 0
             queue = ml_results['queue_length'] if isinstance(ml_results, dict) else 0
@@ -110,30 +107,30 @@ class VideoWorker:
             
             # Проверяем тип ml_results
             if not isinstance(ml_results, dict):
-                print(f"   ❌ ML сервис вернул не словарь: {type(ml_results)}")
+                print(f"ML сервис вернул не словарь: {type(ml_results)}")
                 self.update_video_status(video_id, "failed")
                 return False
             
             if not ml_results.get('success', True):
-                print(f"   ❌ ML ошибка: {ml_results.get('error', 'Unknown error')}")
+                print(f"ML ошибка: {ml_results.get('error', 'Unknown error')}")
                 self.update_video_status(video_id, "failed")
                 return False
             
             print(f"   💾 Сохраняю результаты в БД...")
             self.update_video_status(video_id, "processed", ml_results)
             
-            print(f"   ✅ ГОТОВО!")
+            print(f"ГОТОВО!")
             print(f"   📊 Результаты:")
-            print(f"      👥 Вошло: {ml_results.get('entered_count', 0)} человек")
-            print(f"      🚪 Вышло: {ml_results.get('exited_count', 0)} человек")
-            print(f"      🏠 Внутри: {ml_results.get('current_inside', 0)} человек")
-            print(f"      📏 Очередь: {ml_results.get('queue_length', 0)} человек")
+            print(f"Вошло: {ml_results.get('entered_count', 0)} человек")
+            print(f"Вышло: {ml_results.get('exited_count', 0)} человек")
+            print(f"Внутри: {ml_results.get('current_inside', 0)} человек")
+            print(f"Очередь: {ml_results.get('queue_length', 0)} человек")
             print(f"      ⚠️  Алерт: {ml_results.get('alert_message', '')}")
             
             return True
             
         except Exception as e:
-            print(f"   ❌ ОШИБКА: {e}")
+            print(f"ОШИБКА: {e}")
             self.update_video_status(video_id, "failed")
             return False
     
@@ -142,7 +139,7 @@ class VideoWorker:
         videos = self.get_unprocessed_videos()
         
         if videos:
-            print(f"\n📥 Найдено {len(videos)} видео для обработки")
+            print(f"\nНайдено {len(videos)} видео для обработки")
             for video in videos:
                 self.process_video(video)
             return True
@@ -152,7 +149,7 @@ class VideoWorker:
     def run_continuous(self, interval=10):
         """Запустить непрерывную работу"""
         print("\n" + "="*50)
-        print("🚀 ЗАПУСКАЮ ВИДЕО-ВОРКЕР")
+        print("ЗАПУСКАЮ ВИДЕО-ВОРКЕР")
         print("="*50)
         print("Воркер будет проверять новые видео каждые 10 секунд")
         print("Для остановки нажмите Ctrl+C")
@@ -173,11 +170,11 @@ class VideoWorker:
                     time.sleep(1)
                     
         except KeyboardInterrupt:
-            print(f"\n🛑 Воркер остановлен. Обработано видео: {processed_count}")
+            print(f"\nВоркер остановлен. Обработано видео: {processed_count}")
             self.running = False
             
         except Exception as e:
-            print(f"\n❌ Ошибка в воркере: {e}")
+            print(f"\nОшибка в воркере: {e}")
             import traceback
             traceback.print_exc()  # ← Покажет полную трассировку ошибки
             print("🔄 Перезапуск через 30 секунд...")
