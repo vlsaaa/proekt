@@ -19,3 +19,14 @@ CREATE TABLE videos (
     user_id INTEGER,
     FOREIGN KEY (user_id) REFERENCES user (id)
 );
+-- ========== ДОБАВЛЕНИЕ ПОЛЕЙ ДЛЯ ML ОБРАБОТКИ ==========
+
+-- Добавляем колонки для хранения результатов ML
+ALTER TABLE videos ADD COLUMN status VARCHAR(20) DEFAULT 'uploaded';
+ALTER TABLE videos ADD COLUMN processed_at DATETIME;
+ALTER TABLE videos ADD COLUMN people_entered INTEGER;
+ALTER TABLE videos ADD COLUMN people_exited INTEGER;
+ALTER TABLE videos ADD COLUMN queue_length INTEGER;
+ALTER TABLE videos ADD COLUMN alert_level VARCHAR(10);
+ALTER TABLE videos ADD COLUMN alert_message TEXT;
+ALTER TABLE videos ADD COLUMN ml_results TEXT;
