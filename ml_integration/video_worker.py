@@ -3,7 +3,10 @@ import sqlite3
 import json
 from datetime import datetime
 
+from colorama import Fore, Style
+
 from .ml_service import MLService
+
 
 class VideoWorker:
     """Воркер для обработки видео через ML"""
@@ -12,7 +15,7 @@ class VideoWorker:
         self.db_path = db_path
         self.ml_service = MLService()
         self.running = True
-        print("Видео-воркер инициализирован")
+        print(f"{Fore.CYAN}Видео-воркер инициализирован (БД: {db_path}){Style.RESET_ALL}")
     
     def get_db_connection(self):
         """Подключение к базе данных"""
@@ -121,11 +124,13 @@ class VideoWorker:
             
             print(f"ГОТОВО!")
             print(f"   📊 Результаты:")
-            print(f"Вошло: {ml_results.get('entered_count', 0)} человек")
-            print(f"Вышло: {ml_results.get('exited_count', 0)} человек")
-            print(f"Внутри: {ml_results.get('current_inside', 0)} человек")
-            print(f"Очередь: {ml_results.get('queue_length', 0)} человек")
-            print(f"      ⚠️  Алерт: {ml_results.get('alert_message', '')}")
+            print(f"Уникальных людей вошло в кадр: {ml_results.get('entered_count', 0)}")
+            print(f"Уникальных людей вышло из кадра: {ml_results.get('exited_count', 0)}")
+            print(f"Уникальных людей в очереди: {ml_results.get('queue_length', 0)} (порог: {ml_results.get('queue_threshold', 0)})")
+            if ml_results.get('threshold_exceeded', False):
+                print(f"      ⚠️  {Fore.RED}ПРЕВЫШЕН ПОРОГ!{Style.RESET_ALL} {ml_results.get('alert_message', '')}")
+            else:
+                print(f"      ✅ {ml_results.get('alert_message', '')}")
             
             return True
             
@@ -147,11 +152,11 @@ class VideoWorker:
             return False
     
     def run_continuous(self, interval=10):
-        """Запустить непрерывную работу"""
+        """Запустить непрерывную работу (без рекурсивных перезапусков)"""
         print("\n" + "="*50)
-        print("ЗАПУСКАЮ ВИДЕО-ВОРКЕР")
+        print(f"{Fore.GREEN}ЗАПУСКАЮ ВИДЕО-ВОРКЕР{Style.RESET_ALL}")
         print("="*50)
-        print("Воркер будет проверять новые видео каждые 10 секунд")
+        print(f"Воркер будет проверять новые видео каждые {interval} секунд")
         print("Для остановки нажмите Ctrl+C")
         print("="*50)
         
@@ -159,24 +164,22 @@ class VideoWorker:
         
         try:
             while self.running:
-                if self.run_once():
-                    processed_count += 1
+                try:
+                    if self.run_once():
+                        processed_count += 1
+                    print(f"\n{Fore.YELLOW}⏳ Следующая проверка через {interval} секунд...{Style.RESET_ALL}")
+                except Exception as e:
+                    print(f"\n{Fore.RED}Ошибка в воркере: {e}{Style.RESET_ALL}")
+                    import traceback
+                    traceback.print_exc()
+                    print(f"{Fore.MAGENTA}🔄 Ожидаю 30 секунд перед следующей попыткой...{Style.RESET_ALL}")
+                    time.sleep(30)
                 
-                print(f"\n⏳ Следующая проверка через {interval} секунд...")
-                
-                for i in range(interval):
+                for _ in range(interval):
                     if not self.running:
                         break
                     time.sleep(1)
                     
         except KeyboardInterrupt:
-            print(f"\nВоркер остановлен. Обработано видео: {processed_count}")
+            print(f"\n{Fore.CYAN}Воркер остановлен. Обработано видео: {processed_count}{Style.RESET_ALL}")
             self.running = False
-            
-        except Exception as e:
-            print(f"\nОшибка в воркере: {e}")
-            import traceback
-            traceback.print_exc()  # ← Покажет полную трассировку ошибки
-            print("🔄 Перезапуск через 30 секунд...")
-            time.sleep(30)
-            self.run_continuous(interval)

@@ -6,6 +6,7 @@ import db
 import sys
 import io
 import uuid
+import json
 from db import get_db
 
 from werkzeug.utils import secure_filename
@@ -248,11 +249,10 @@ def get_processed_videos():
     try:
         db = get_db()
         
-        # Ищем обработанные видео
         videos = db.execute("""
             SELECT id, title, filename, 
                    people_entered, people_exited, queue_length,
-                   alert_message, processed_at
+                   alert_message, ml_results, processed_at
             FROM videos 
             WHERE status = 'processed'
             ORDER BY processed_at DESC
@@ -261,6 +261,14 @@ def get_processed_videos():
         
         result = []
         for video in videos:
+            # Парсим ml_results (JSON), чтобы достать queue_threshold и threshold_exceeded
+            ml_results = {}
+            if video['ml_results']:
+                try:
+                    ml_results = json.loads(video['ml_results'])
+                except (json.JSONDecodeError, TypeError):
+                    ml_results = {}
+            
             result.append({
                 'id': video['id'],
                 'title': video['title'],
@@ -268,8 +276,9 @@ def get_processed_videos():
                 'stats': {
                     'entered': video['people_entered'],
                     'exited': video['people_exited'],
-                    'inside': video['people_entered'] - video['people_exited'],
-                    'queue': video['queue_length']
+                    'queue': video['queue_length'],
+                    'queue_threshold': ml_results.get('queue_threshold', 5),  # Порог очереди
+                    'threshold_exceeded': ml_results.get('threshold_exceeded', False)  # Превышен ли порог (для фронта)
                 },
                 'alert': video['alert_message'],
                 'processed_at': video['processed_at']
