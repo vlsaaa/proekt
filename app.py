@@ -1,8 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 import os
-os.system('chcp 65001')
-import db
 import sys
 import io
 import uuid
@@ -10,13 +8,14 @@ import json
 from db import get_db
 
 from werkzeug.utils import secure_filename
+import db
 
+os.system('chcp 65001')
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv'}
 
-# Создаем Flask приложение
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 
@@ -28,12 +27,10 @@ app.config['DATABASE'] = 'database.db'
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Проверка расширения файла
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Главная страница
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -315,7 +312,6 @@ def get_processing_status():
         'note': 'ML воркер работает в отдельном терминале'
     })
 
-# Запускаем сервер
 if __name__ == '__main__':
     print("=== Запускаем Flask сервер ===")
     print("Сайт будет доступен по адресу: http://localhost:5000")
