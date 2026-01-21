@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой первый сайт</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Кнопка авторизации -->
+    <button id="authBtn" class="auth-btn">🔐 Авторизоваться</button>
+    
+    <div class="container">
+        <h1>Добро пожаловать на мой сайт!</h1>
+        <p>Нажмите на кнопки чтобы проверить работу:</p>
+        
+        <div class="buttons-container">
+            <button id="uploadBtn" class="btn">📹 Загрузить видео</button>
+            <button id="infoBtn" class="btn">📊 Вывод информации</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="info">
+            <p><strong>Сервер:</strong> Python Flask</p>
+            <p><strong>Статус:</strong> <span style="color: green;">● Работает</span></p>
+        </div>
+    </div>
+
+    <!-- Модальное окно авторизации -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="closeModal" class="modal-close">×</button>
+            <h2 class="modal-title">Авторизация</h2>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" placeholder="Введите ваш e-mail" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Номер телефона:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Введите ваш номер телефона" required>
+                </div>
+                
+                <button type="submit" id="submitAuth" class="submit-btn" disabled>Авторизоваться</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Модальное окно для ML результатов -->
+<div id="mlResultsModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+        <button id="closeMlModal" class="modal-close">×</button>
+        <h2 class="modal-title">🤖 Анализ видео системой компьютерного зрения</h2>
+        
+        <div class="ml-tabs" style="margin-bottom: 20px;">
+            <button id="mlStatsTab" class="ml-tab-btn active" onclick="switchMlTab('stats')">📊 Статистика</button>
+            <button id="mlVideosTab" class="ml-tab-btn" onclick="switchMlTab('videos')">🎬 Обработанные видео</button>
+            <button id="mlStatusTab" class="ml-tab-btn" onclick="switchMlTab('status')">🔧 Система</button>
+        </div>
+        
+        <!-- Статистика -->
+        <div id="mlStatsContent" class="ml-tab-content active">
+            <div class="ml-stats-grid" id="mlStatsGrid">
+                <!-- Статистика загрузится через JS -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="loadMlStats()" class="action-btn" style="padding: 10px 20px;">
+                    🔄 Обновить статистику
+                </button>
+            </div>
+        </div>
+        
+        <!-- Обработанные видео -->
+        <div id="mlVideosContent" class="ml-tab-content">
+            <div id="mlVideosContainer">
+                <!-- Видео загрузятся через JS -->
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="loadMlVideos()" class="action-btn" style="padding: 10px 20px;">
+                    🔄 Обновить список видео
+                </button>
+            </div>
+        </div>
+        
+        <!-- Статус ML -->
+        <div id="mlStatusContent" class="ml-tab-content">
+            <div id="mlStatusInfo" style="padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <p>Загружаем информацию о системе компьютерного зрения...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно деталей видео -->
+<div id="mlDetailsModal" class="ml-details-modal">
+    <div class="ml-details-content">
+        <button class="ml-close-details" onclick="closeMlDetails()">×</button>
+        <h3 style="margin-bottom: 20px;">📋 Результаты анализа видео</h3>
+        <div id="mlDetailsContent">
+            <!-- Детали загрузятся через JS -->
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Стили для ML модального окна - добавлю в существующий style блок или создам новый */
+    .ml-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
+    }
+    
+    .ml-tab-btn {
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+    
+    .ml-tab-btn.active {
+        background: #007bff;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .ml-tab-btn:hover:not(.active) {
+        background: #e9ecef;
+    }
+    
+    .ml-tab-content {
+        display: none;
+    }
+    
+    .ml-tab-content.active {
+        display: block;
+    }
+    
+    .ml-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .ml-stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        text-align: center;
+        border-left: 4px solid #007bff;
+    }
+    
+    .ml-stat-card.alert {
+        border-left-color: #dc3545;
+    }
+    
+    .ml-stat-card.warning {
+        border-left-color: #ffc107;
+    }
+    
+    .ml-stat-card.success {
+        border-left-color: #28a745;
+    }
+    
+    .ml-stat-value {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 10px 0;
+        color: #333;
+    }
+    
+    .ml-stat-label {
+        color: #666;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .ml-videos-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        margin-top: 10px;
+    }
+    
+    .ml-videos-table th {
+        background: #f8f9fa;
+        color: #495057;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: bold;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .ml-videos-table td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .ml-videos-table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .ml-queue-badge {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-block;
+    }
+    
+    .ml-queue-normal {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .ml-queue-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .ml-status-badge {
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .ml-status-low {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .ml-status-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .ml-details-btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: background 0.3s;
+    }
+    
+    .ml-details-btn:hover {
+        background: #0056b3;
+    }
+    
+    .ml-no-data {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin: 20px 0;
+    }
+    
+    .ml-details-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 3000;
+    }
+    
+    .ml-details-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        position: relative;
+    }
+    
+    .ml-close-details {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+    }
+    
+    .ml-detail-item {
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .ml-detail-label {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .ml-detail-value {
+        color: #212529;
+    }
+    
+    .ml-system-info {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+    
+    .action-btn {
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+    }
+</style>
+</body>
+</html>
